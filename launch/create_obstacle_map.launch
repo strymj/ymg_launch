@@ -1,0 +1,165 @@
+<launch> 
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ymg_launch)/rviz_config/myconf.rviz" respawn="true"/>
+
+	<param name="use_sim_time" value="true"/>
+	<arg name="bag1" default="$(find bags)/univ_test_2018/univ_test_vlp10hz.bag"/>
+	<!-- <arg name="bag1" default="$(find bags)/tc2017/tsukuba_chalenge/20170708/manual1/tf_map_2017&#45;11&#45;24&#45;02&#45;31&#45;56.bag"/> -->
+	<!-- <arg name="bag1" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/odom_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
+	<!-- <arg name="bag2" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/velodyne_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
+	<!-- <arg name="bag1" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/odom_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
+	<!-- <arg name="bag2" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/velodyne_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
+	<!-- <arg name="bag1" default="$(find bags)/tc2017/university_test/20170606/tf_2017&#45;06&#45;06&#45;07&#45;15&#45;05.bag"/> -->
+	<!-- <arg name="bag2" default="$(find bags)/tc2017/university_test/20170606/velodyne_2017&#45;06&#45;06&#45;07&#45;15&#45;05.bag"/> -->
+	<!-- <arg name="bag3" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/cam_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
+	<!-- <node pkg="rosbag" type="play" name="player" output="screen" args="&#45;&#45;clock &#45;r 0.16 $(arg bag1) $(arg bag2)"/> -->
+	<!-- <node pkg="rosbag" type="play" name="player" output="screen" args="&#45;&#45;clock &#45;r 0.05 $(arg bag1) $(arg bag2)"/> -->
+	<!-- <node pkg="rosbag" type="play" name="player" output="screen" args="&#45;&#45;clock &#45;r 0.16 &#45;s 1400 $(arg bag1) $(arg bag2)"/> -->
+	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock $(arg bag1)"/>
+
+	<!-- <node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/localization_map_univ_both8x0.7.yaml"> -->
+	<!-- <node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/both8.yaml"> -->
+	<node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/univ_vlp10hz_both_r0.7.yaml">
+		<remap from="map" to="map4obstacle" />
+		<remap from="static_map" to="map4obstacle_static_map"/>
+	</node>
+
+	<include file="$(find ymg_launch)/launch/amcl_tsukuba_using_vlp_laser.launch"/>
+
+
+	<node pkg="sensor_tf_test" name="odom_tf" type="sensor_tf_odom"/>
+
+	<node pkg="tf" type="static_transform_publisher" name="base2velodyne" args="0.32 0 0.91 0 0 0 base_link velodyne 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2hokuyo3d" args="0.45 0 0.80 0 0 3.14159 base_link hokuyo3d 100"/>
+
+	<node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2">
+		<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="130"/>
+	</node>
+
+	<node pkg="dme_pointcloud_proc" type="pointcloud_to_laser_node" name="vlp_laser_scan" output="screen">
+		<param name="max_height" value="50"/>
+		<param name="min_height" value="-0.91"/>
+		<param name="laser_frame" value="velodyne"/>
+		<param name="mode" value="both"/>
+		<param name="used_ring" value="8"/>
+		<remap from="vlp_laser" to="vlp_laser"/>
+	</node>
+
+	<node name="clustering_node" pkg="dme_pointcloud_proc" type="clustering_node" output="screen" respawn="true">
+		<param name="velodyne_points" value="velodyne_points"/>
+		<param name="map_frame" value="map"/>
+		<param name="sensor_frame" value="velodyne"/>
+		<param name="horizontal_resolution_deg" value="2.0"/>
+		<param name="vertical_resolution_deg" value="0.25"/>
+		<param name="horizontal_gap_thresh" value="5.0"/>
+		<param name="vertical_gap_thresh" value="15.0"/>
+		<param name="coeff_h" value="60"/>
+		<param name="coeff_v" value="75"/>
+		<param name="coeff_s" value="45"/>
+		<param name="remove_ground" value="true"/>
+		<param name="first_ring_ground_thresh_z" value="0.15"/>
+		<param name="max_ground_gradient_deg" value="10.0"/>
+		<param name="publish_in_clust_order" value="true"/>
+		<param name="publish_ground_topic" value="false"/>
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="9.0"/>
+	</node>
+
+	<node pkg="dme_pointcloud_proc" name="tracking" type="tracking_node" output="screen" respawn="true">
+		<remap from="clustered_pc" to="clustered_pc"/>
+
+		<param name="track_size_min_x" value="0.3"/>
+		<param name="track_size_min_y" value="0.05"/>
+		<param name="track_size_min_z" value="0.5"/>
+		<param name="track_size_max_x" value="2.0"/>
+		<param name="track_size_max_y" value="0.8"/>
+		<param name="track_size_max_z" value="2.0"/>
+		<param name="track_min_z" value="0.8"/>
+		<param name="track_max_z" value="2.1"/>
+
+		<param name="target_size_min_x" value="0.3"/>
+		<param name="target_size_min_y" value="0.1"/>
+		<param name="target_size_min_z" value="0.5"/>
+		<param name="target_size_max_x" value="0.8"/>
+		<param name="target_size_max_y" value="0.8"/>
+		<param name="target_size_max_z" value="2.0"/>
+		<param name="target_min_z" value="1.0"/>
+		<param name="target_max_z" value="2.1"/>
+
+		<param name="dynamic_speed_threshold" value="0.7"/>
+		<param name="tracking_max_speed" value="10.0"/>
+
+		<param name="weight_place" value="0.7"/>
+		<param name="weight_size" value="0.3"/>
+		<param name="weight_old" value="0.0"/>
+		<param name="weight_long_tracked" value="0.0"/>
+		<param name="interval" value="0.05"/>
+	</node>
+
+	<node pkg="dme_pointcloud_proc" type="bounding_box_node" name="bounding_box" output="screen">
+		<remap from="clustered_pc" to="tracked_pc_movable"/>
+	</node>
+
+	<node pkg="dme_pointcloud_proc" type="ring_variance_node" name="ring_obstacle" respawn="true">
+		<remap from="obstacle_points" to="velodyne_obstacles"/>
+		<remap from="clear_points" to="velodyne_clear"/>
+		<param name="average_n" value="9"/>
+		<param name="min_range" value="1.0"/>
+		<param name="max_range" value="8.0"/>
+		<!-- <param name="threshold" value="0.00015"/> -->
+		<param name="threshold" value="0.00025"/>
+		<!-- <param name="max_z" value="&#45;0.71"/> -->
+		<!-- <param name="min_z" value="&#45;1.11"/> -->
+		<param name="max_z" value="100.71"/>
+		<param name="min_z" value="-100.11"/>
+	</node>  
+
+	<!-- <node pkg="dme_pointcloud_proc" type="ring_differentiate_node" name="ring_differentiate" respawn="true" output="screen"> -->
+		<!-- 	<remap from="obstacle_points" to="velodyne_obstacles"/> -->
+		<!-- 	<remap from="clear_points" to="velodyne_clear"/> -->
+		<!-- 	<param name="average_n" value="7"/> -->
+		<!-- 	<param name="threshold_first" value="0.000"/> -->
+		<!-- 	<param name="threshold_second" value="0.0015"/> -->
+		<!-- 	<param name="range" value="8.0"/> -->
+		<!-- 	<param name="max_height" value="&#45;0.71"/> -->
+		<!-- 	<param name="min_height" value="&#45;1.11"/> -->
+		<!-- </node>   -->
+
+	<!-- <node pkg="velodyne_height_map" type="heightmap_node" name="heightmap_node" > -->
+		<!-- 	<!&#45;&#45; <remap from="velodyne_obstacles" to="height_map_obstacles"/> &#45;&#45;> -->
+		<!-- 	<!&#45;&#45; <remap from="velodyne_clear" to="height_map_clear"/> &#45;&#45;> -->
+		<!-- 	<param name="cell_size" value="0.1"/> -->
+		<!-- 	<!&#45;&#45; <param name="cell_size" value="0.1"/> &#45;&#45;> -->
+		<!-- 	<param name="full_clouds" value="true"/> -->
+		<!-- 	<!&#45;&#45; <param name="grid_dimensions" value="100"/> &#45;&#45;> -->
+		<!-- 	<param name="grid_dimensions" value="200"/> -->
+		<!-- 	<!&#45;&#45; <param name="height_threshold" value="0.06"/> &#45;&#45;> -->
+		<!-- 	<!&#45;&#45; to detect lawn &#45;&#45;> -->
+		<!-- 	<param name="height_threshold" value="0.006"/> -->
+		<!-- </node> -->
+
+	<node pkg="dme_pointcloud_proc" type="obstacle_map_creator_node" name="create_obstacle_map" output="screen" respawn="true">
+		<remap from="velodyne_clear" to="velodyne_clear"/>
+		<remap from="static_map" to="map4obstacle_static_map"/>
+		<remap from="tracked_pc_dynamic" to="tracked_pc_movable"/>
+		<param name="map_publish_period" value="1.0"/>
+		<param name="threshold" value="51"/>
+		<param name="initial_value_obstacle" value="50"/>
+		<param name="initial_value_freespace" value="50"/>
+		<param name="initial_value_unknown" value="50"/>
+		<param name="robot_radius_m" value="0.5"/>
+		<param name="person_radius_m" value="0.8"/>
+		<param name="obstacle_weight" value="2"/>
+		<param name="clear_weight" value="-1"/>
+		<param name="clear_weight_dynamic" value="-3"/>
+		<!-- <param name="max_range" value="10"/> -->
+		<!-- <param name="max_range" value="8.0"/> -->
+		<!-- <param name="min_range" value="3.5"/> -->
+		<!-- <param name="min_range" value="1.0"/> -->
+		<param name="use_raw" value="false"/>
+	</node>
+
+	<!-- <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure"/>  -->
+
+</launch>

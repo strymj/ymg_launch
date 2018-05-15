@@ -1,0 +1,18 @@
+<launch>
+
+	<node pkg="ypspur_ros_bridge" type="ypspur_ros_bridge" name="ypspur_ros_bridge"/>
+
+	<node pkg="tf2_ros" type="static_transform_publisher" name="base2velodyne" args="0.32 0 0.91 0 0 0 base_link velodyne"/>
+	<node pkg="tf2_ros" type="static_transform_publisher" name="base2hokuyo3d" args="0.45 0 0.80 0 0 3.14159 base_link hokuyo3d"/>
+
+	<include file="$(find hokuyo3d)/launch/hokuyo3d.launch"/>
+	<include file="$(find velodyen_pointcloud)/launch/VLP16_points.launch"/>
+
+	<node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2">
+		<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="130"/>
+	</node>
+
+</launch>
+

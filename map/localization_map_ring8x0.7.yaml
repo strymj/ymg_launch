@@ -1,0 +1,7 @@
+image: /home/kerberos/catkin_ws/src/ymg_programs/jrm2018/map/localization_map_ring8x0.7.pgm
+resolution: 0.100000
+origin: [-509.600000, -215.200000, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

@@ -1,0 +1,7 @@
+image: /home/kerberos/catkin_ws/src/ymg_programs/jrm2018/map/univ_ring8_no_indoor.pgm
+resolution: 0.100000
+origin: [-506.400000, -218.400000, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

@@ -1,0 +1,132 @@
+<launch>
+
+	<!-- pi -->
+	<arg name="pi"   default="3.14159"/>
+	<arg name="pi_4" default="0.78540"/>
+	<arg name="pi_6" default="0.52360"/>
+
+	<!-- transform -->
+	<node pkg="tf" type="static_transform_publisher" name="base2velodyne"          args="0.32   0.0  0.91  0.0         0.0         0.0         base_link velodyne 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_top"         args="0.32   0.0  0.91  0.0         0.0         0.0         base_link laser_top 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_front_left"  args="0.70   0.16 0.20  $(arg pi_4) 0.0         $(arg pi) base_link laser_front_left 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_front_right" args="0.70  -0.16 0.20 -$(arg pi_4) 0.0         $(arg pi) base_link laser_front_right 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_back"        args="-0.075 0.0  0.20  $(arg pi)   0.0         $(arg pi)  base_link laser_back 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2hokuyo3d"          args="0.48   0.0  0.705  0.0         $(arg pi_6) 0.0 base_link hokuyo3d 100"/>
+
+
+	<!-- tf -->
+	<!-- <node pkg="sensor_tf_test" type="sensor_tf_velodyne" name="velodyne_tf" respawn="true"> -->
+		<!-- 	<param name="height" value="0.95"/> -->
+		<!-- 	<param name="x" value="0.34"/> -->
+		<!-- </node> -->
+	<!--  -->
+	<!-- <node pkg="sensor_tf_test" type="sensor_tf_laser" name="laser_tf" respawn="true"/> -->
+
+	<!-- <include file="$(find sensor_tf_test)/launch/camera.launch"/> -->
+
+	<!-- 3durg -->
+	<node pkg="hokuyo3d" type="hokuyo3d" name="hokuyo3d" output="screen">
+		<param name="ip" value = "192.168.0.10"/>
+		<param name="port" value = "10940"/>
+		<param name="interlace" value = "1"/>
+		<param name="frame_id" value = "hokuyo3d"/>
+		<param name="range_min" value = "0.0"/>
+		<param name="output_cycle" value = "frame"/>
+		<!-- <param name="output_cycle" value = "field"/> -->
+		<!-- <param name="output_cycle" value = "line"/> -->
+	</node>
+
+
+	<!-- velodyne -->
+	<include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"/>
+
+	<node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2">
+		<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="130"/>
+	</node>
+
+
+
+	<!-- odometry -->
+	<!-- <node pkg="ypspur_ros_bridge" type="ypspur_ros_bridge" name="ypspur_ros_bridge" /> -->
+	<include file="$(find ypspur_ros_bridge)/launch/start_ypspur.launch"/>
+
+	<node pkg="sgm_imu" type="sgm_nav_driver_scale_mode" name="imu_driver" output="screen" respawn="true">
+		<remap from="imu" to="imu/data_raw"/>
+	</node>
+<!--   <node pkg="sgm_imu" type="nav_driver_ring_buffer" name="imu_driver" output="screen" respawn="true">
+		<remap from="imu" to="imu/data_raw"/>
+	</node> -->
+	<node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter" respawn="true">
+		<remap from="imu/data" to="imu"/>
+		<param name="use_mag" value="false"/>
+		<param name="publish_tf" value="false"/>
+	</node>
+
+	<node pkg="dme_gyro_odometer" type="dme_gyro_odometer" name="dme_gyro_odometer" output="screen" respawn="true"/>
+
+	<!-- sensors -->
+	<!-- <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"/> -->
+
+	<!-- <!&#45;&#45; scan top &#45;&#45;> -->
+	<!-- <node pkg="urg_node" type="urg_node" name="urg_top" respawn="true"> -->
+	<!-- 	<param name="serial_port" value="/dev/hokuyo_H0800095"/> -->
+	<!-- 	<remap from="scan" to="scan_top" /> -->
+	<!-- 	<param name="frame_id" value="laser_top"/> -->
+	<!-- 	<param name="angle_min" value="&#45;2.25" /> -->
+	<!-- 	<param name="angle_max" value="2.25" /> -->
+	<!-- </node> -->
+	<!-- <!&#45;&#45; scan front left &#45;&#45;> -->
+	<!-- <node pkg="urg_node" type="urg_node" name="urg_front_left" respawn="true"> -->
+	<!-- 	<param name="serial_port" value="/dev/hokuyo_H0803439"/> -->
+	<!-- 	<remap from="scan" to="scan_front_left" /> -->
+	<!-- 	<param name="frame_id" value="laser_front_left"/> -->
+	<!-- 	<param name="angle_min" value="&#45;1.7" /> -->
+	<!-- 	<param name="angle_max" value="1.5" /> -->
+	<!-- </node> -->
+	<!-- <!&#45;&#45; scan front right &#45;&#45;> -->
+	<!-- <node pkg="urg_node" type="urg_node" name="urg_front_right" respawn="true"> -->
+	<!-- 	<param name="serial_port" value="/dev/hokuyo_H0803433"/> -->
+	<!-- 	<remap from="scan" to="scan_front_right" /> -->
+	<!-- 	<param name="frame_id" value="laser_front_right"/> -->
+	<!-- 	<param name="angle_min" value="&#45;2.0" /> -->
+	<!-- 	<param name="angle_max" value="1.75" /> -->
+	<!-- </node> -->
+	<!-- <!&#45;&#45; scan back &#45;&#45;> -->
+	<!-- <node pkg="urg_node" type="urg_node" name="urg_back" respawn="true"> -->
+	<!-- 		<param name="serial_port" value="/dev/hokuyo_H0805663"/> -->
+	<!-- 		<remap from="scan" to="scan_back" /> -->
+	<!-- 		<param name="frame_id" value="laser_back"/> -->
+	<!-- 		<param name="angle_min" value="&#45;1.2" /> -->
+	<!-- 		<param name="angle_max" value="1.2" /> -->
+	<!-- </node>  -->
+
+
+	<!-- <!&#45;&#45; scan front left fixer &#45;&#45;> -->
+	<!-- <node pkg="dme_laser_proc" type="laser_fixer" name="laser_fixer_front_left" respawn="true">  -->
+	<!-- 	<remap from="scan" to="scan_front_left"/> -->
+	<!-- 	<remap from="laser_fixed" to="scan_front_left_fixed"/> -->
+	<!-- 	<!&#45;&#45; <param name="noise_thresh_m" value="0.05"/> &#45;&#45;> -->
+	<!-- </node> -->
+	<!-- <!&#45;&#45; scan front right fixer &#45;&#45;> -->
+	<!-- <node pkg="dme_laser_proc" type="laser_fixer" name="laser_fixer_front_right" respawn="true">  -->
+	<!-- 	<remap from="scan" to="scan_front_right"/> -->
+	<!-- 	<remap from="laser_fixed" to="scan_front_right_fixed"/> -->
+	<!-- 	<!&#45;&#45; <param name="noise_thresh_m" value="0.05"/> &#45;&#45;> -->
+	<!-- </node> -->
+	<!-- scan back fixer -->
+	<!-- <node pkg="dme_laser_proc" type="laser_fixer" name="laser_fixer_back" respawn="true">  -->
+		<!-- 	<remap from="scan" to="scan_back"/> -->
+		<!-- 	<remap from="laser_fixed" to="scan_back_fixed"/> -->
+	<!-- </node> -->
+
+	<!-- <node pkg="dme_laser_proc" type="laser_integrator" name="integrate" respawn="true" output="screen"> -->
+	<!-- 	<remap from="scan1" to="scan_front_left_fixed" /> -->
+	<!-- 	<remap from="scan2" to="scan_front_right_fixed" /> -->
+	<!-- 	<param name="target_frame" value="laser_integrated"/> -->
+	<!-- 	<param name="laser_frame1" value="laser_front_left"/> -->
+	<!-- 	<param name="laser_frame2" value="laser_front_right"/> -->
+	<!-- </node> -->
+
+</launch>

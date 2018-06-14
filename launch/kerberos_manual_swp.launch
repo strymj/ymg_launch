@@ -1,0 +1,288 @@
+<launch>
+
+	<!-- pi -->
+	<arg name="pi" default="3.14159"/>
+	<arg mane="pi_4" default="0.78540"/>
+
+	<!-- transform -->
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_top"         args="0.32   0.0 0.91 0.0       0.0   0.0         base_link laser_top 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_front_left"  args="0.70   0.0 0.20 $(arg pi) 0.0   $(arg pi_4) base_link laser_front_left 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_front_right" args="0.70   0.0 0.20 $(arg pi) 0.0  -$(arg pi_4) base_link laser_front_right 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2laser_back"        args="-0.075 0.0 0.20 $(arg pi) 0.0   $(arg pi)   base_link laser_back 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="base2hokuyo3d"          args="0.32   0.0 0.91 0.0       0.0   0.0         base_link hokuyo3d 100"/>
+
+
+	<!-- tf -->
+	<!-- <node pkg="sensor_tf_test" type="sensor_tf_velodyne" name="velodyne_tf" respawn="true"> -->
+	<!-- 	<param name="height" value="0.95"/> -->
+	<!-- 	<param name="x" value="0.34"/> -->
+	<!-- </node> -->
+  <!--  -->
+	<!-- <node pkg="sensor_tf_test" type="sensor_tf_laser" name="laser_tf" respawn="true"/> -->
+
+	<include file="$(find sensor_tf_test)/launch/camera.launch"/>
+
+
+	<!-- odometry -->
+	<!-- <node pkg="ypspur_ros_bridge" type="ypspur_ros_bridge" name="ypspur_ros_bridge" /> -->
+	<include file="$(find ypspur_ros_bridge)/launch/start_ypspur.launch"/>
+	<node pkg="sgm_imu" type="sgm_nav_driver_scale_mode" name="imu_driver" output="screen" respawn="true">
+		<remap from="imu" to="imu/data_raw"/>
+	</node>
+<!--   <node pkg="sgm_imu" type="nav_driver_ring_buffer" name="imu_driver" output="screen" respawn="true">
+		<remap from="imu" to="imu/data_raw"/>
+	</node> -->
+	<node pkg="imu_filter_madgwick" type="imu_filter_node" name="imu_filter" respawn="true">
+		<remap from="imu/data" to="imu"/>
+		<param name="use_mag" value="false"/>
+		<param name="publish_tf" value="false"/>
+	</node>
+
+	<node pkg="dme_gyro_odometer" type="dme_gyro_odometer" name="dme_gyro_odometer" output="screen" respawn="true"/>
+
+
+	<!-- sensors -->
+	<include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"/>
+
+	<!-- scan top -->
+	<node pkg="urg_node" type="urg_node" name="urg_top" respawn="true">
+		<param name="serial_port" value="/dev/hokuyo_H0800095"/>
+		<remap from="scan" to="scan_front_right" />
+		<param name="frame_id" value="laser_top"/>
+		<param name="angle_min" value="-2.25" />
+		<param name="angle_max" value="2.25" />
+	</node>
+	<!-- scan front left -->
+	<node pkg="urg_node" type="urg_node" name="urg_front_left" respawn="true">
+		<param name="serial_port" value="/dev/hokuyo_H0803439"/>
+		<remap from="scan" to="scan_front_left" />
+		<param name="frame_id" value="laser_front_left"/>
+		<param name="angle_min" value="-1.7" />
+		<param name="angle_max" value="1.5" />
+	</node>
+	<!-- scan front right -->
+	<node pkg="urg_node" type="urg_node" name="urg_front_right" respawn="true">
+		<param name="serial_port" value="/dev/hokuyo_H0803433"/>
+		<remap from="scan" to="scan_front_right" />
+		<param name="frame_id" value="laser_front_right"/>
+		<param name="angle_min" value="-2.0" />
+		<param name="angle_max" value="1.75" />
+	</node>
+	<!-- scan back -->
+	<!-- <node pkg="urg_node" type="urg_node" name="urg_back" respawn="true"> -->
+	<!-- 	<param name="serial_port" value="/dev/hokuyo_H0805663"/> -->
+	<!-- 	<remap from="scan" to="scan_back" /> -->
+	<!-- 	<param name="frame_id" value="laser_back"/> -->
+	<!-- 	<param name="angle_min" value="&#45;1.2" /> -->
+	<!-- 	<param name="angle_max" value="1.2" /> -->
+	<!-- </node>  -->
+
+
+	<!-- scan front left fixer -->
+	<node pkg="my_pointcloud2" type="laser_fixer" name="laser_fixer_front_left" respawn="true"> 
+		<remap from="scan" to="scan_front_left"/>
+		<remap from="laser_fixed" to="scan_front_left_fixed"/>
+		<!-- <param name="noise_thresh_m" value="0.05"/> -->
+	</node>
+	<!-- scan front right fixer -->
+	<node pkg="my_pointcloud2" type="laser_fixer" name="laser_fixer_front_right" respawn="true"> 
+		<remap from="scan" to="scan_front_right"/>
+		<remap from="laser_fixed" to="scan_front_right_fixed"/>
+		<!-- <param name="noise_thresh_m" value="0.05"/> -->
+	</node>
+	<!-- scan back fixer -->
+	<!-- <node pkg="my_pointcloud2" type="laser_fixer" name="laser_fixer_back" respawn="true">  -->
+	<!-- 	<remap from="scan" to="scan_back"/> -->
+	<!-- 	<remap from="laser_fixed" to="scan_back_fixed"/> -->
+	<!-- </node> -->
+
+	<node pkg="dme_laser_proc" type="laser_integrator" name="integrate" respawn="true" output="screen">
+		<remap from="scan1" to="scan_front_left_fixed" />
+		<remap from="scan2" to="scan_front_right_fixed" />
+		<param name="target_frame" value="laser_integrated"/>
+		<param name="laser_frame1" value="laser_front_left"/>
+		<param name="laser_frame2" value="laser_front_right"/>
+	</node>
+
+	<!-- camera -->
+	<!-- <include file="$(find usb_cam)/launch/c920t.launch"/> -->
+
+	<!-- localization -->
+	<node pkg="map_server" type="map_server" name="map_server4amcl" args="/home/kerberos/tsukuba_challenge_2017/tsukuba_challenge/map/both.yaml" respawn="true">
+		<remap from="map" to="map4amcl" />
+		<remap from="static_map" to="map4amcl_static_map"/>
+	</node>
+
+	<node pkg="map_server" type="map_server" name="map_server4planner" args="/home/kerberos/tsukuba_challenge_2017/tsukuba_challenge/map/obstacle_fixed.yaml" respawn="true">
+		<remap from="map" to="obstacle_map"/>
+		<remap from="static_map" to="obstacle_static_map"/>
+	</node>
+	<node pkg="map_server" type="map_server" name="map_server4target" args="/home/kerberos/tsukuba_challenge_2017/tsukuba_challenge/map/target.yaml" respawn="true">
+		<remap from="map" to="map4target"/>
+		<remap from="static_map" to="map4target_static_map"/>
+	</node>
+
+	<!-- velodyne scan -->
+	<node pkg="my_pointcloud2" type="laser_node" name="laser_scan" output="screen">
+		<param name="laser_frame" value="velodyne" />
+		<param name="laser_topic" value="vlp_laser"/>
+		<param name="velodyne_topic" value="velodyne_points" />
+		<param name="velodyne_frame" value="velodyne" />
+		<param name="max_range" value="200" />
+		<param name="min_range" value="0.2" />
+		<param name="mode" value="both" />
+		<param name="max_height" value="50"/>
+		<param name="min_height" value="0.5"/>
+		<param name="base_link_frame" value="base_link"/>
+	</node>
+
+	<!-- vlp laser -->
+	<include file="$(find dme_launch)/launch/amcl_tsukuba_using_vlp_laser.launch"/>
+
+<!-- navigation -->
+	<include file="$(find dme_launch)/launch/navigation.launch" output="screen"/>
+
+	<node pkg="velodyne_height_map" type="heightmap_node" name="heightmap_node" respawn="true">
+		<param name="cell_size" value="0.2"/>
+		<param name="full_clouds" value="true"/>
+		<param name="grid_dimensions" value="300"/>
+		<param name="height_threshold" value="0.25"/>
+		<param name="height_z_threshold" value="2.0"/>
+		<param name="full_clouds" value="false"/>
+		<param name="sensor_frame" value="velodyne"/>
+		<param name="sensor_data_topic" value="velodyne_points"/>
+	</node>
+
+	<node pkg="global_to_local_costmap" type="global_to_local_costmap" name="global2local" respawn="true">
+		<remap from="map" to="obstacle_map"/>
+		<remap from="static_map" to="obstacle_static_map"/>
+		<param name="range" value="30" />
+	</node> 
+
+
+<!-- target -->
+	<node name="my_pointcloud2_clustering_node" pkg="my_pointcloud2" type="clustering_node" output="screen" respawn="true">
+		<param name="velodyne_points" value="velodyne_points" />
+		<param name="velodyne_frame" value="velodyne" />
+		<param name="target_frame" value="base_link" />
+		<param name="coeff_h" value="45" />
+		<param name="coeff_v" value="45"/>
+		<param name="coeff_s" value="45"/>
+		<param name="extract_clust" value="0" />
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="100"/>
+	</node>
+	<node pkg="my_pointcloud2" name="my_pointcloud2_tracking" type="cluster_tracking_node" output="screen" respawn="true">
+		<param name="track_size_min_x" value="0.2" />
+		<param name="track_size_min_y" value="0.15" />
+		<param name="track_size_min_z" value="0.5" />
+		<param name="track_size_max_x" value="1.0" />
+		<param name="track_size_max_y" value="1.0" />
+		<param name="track_size_max_z" value="2" />
+		<param name="track_min_z" value="1.0" />
+		<param name="track_max_z" value="2" />
+
+		<param name="target_size_min_x" value="0.3" />
+		<param name="target_size_min_y" value="0.15" />
+		<param name="target_size_min_z" value="0.5" />
+		<param name="target_size_max_x" value="1.0" />
+		<param name="target_size_max_y" value="1.0" />
+		<param name="target_size_max_z" value="1.8" />
+		<param name="target_min_z" value="0.5" />
+		<param name="target_max_z" value="1.8" />
+
+		<param name="speed_limit" value="0.5" />
+
+		<param name="weight_place" value="1.0" />
+		<param name="weight_size" value="0.2" />
+		<param name="weight_old" value="0.1" />
+		<param name="weight_long_tracked" value="1.0" />
+		<param name="interval" value="0.2"/>
+	</node>
+
+
+	<node pkg="my_pointcloud2" name="my_pointcloud2_crop" type="crop_target" output="screen" respawn="true">
+		<param name="use_convex" value="false"/>
+		<param name="use_min_max" value="true"/>
+		<param name="camera" value="usb_cam1/image_raw" />
+		<param name="camera_frame" value="camera1" />
+		<param name="max_inflation" value="5" />
+		<param name="target_max_z" value="1.4"/>
+		<param name="target_min_z" value="0.4"/>
+	</node>
+	<node pkg="my_pointcloud2" name="my_pointcloud2_crop2" type="crop_target" output="screen" respawn="true">
+		<param name="use_convex" value="false"/>
+		<param name="use_min_max" value="true"/>
+		<param name="camera" value="usb_cam2/image_raw" />
+		<param name="camera_frame" value="camera2" />
+		<param name="max_inflation" value="5" />
+		<param name="target_max_z" value="1.4"/>
+		<param name="target_min_z" value="0.4"/>
+	</node>
+	<node pkg="my_pointcloud2" name="my_pointcloud2_crop3" type="crop_target" output="screen" respawn="true">
+		<param name="use_convex" value="false"/>
+		<param name="use_min_max" value="true"/>
+		<param name="camera" value="usb_cam3/image_raw" />
+		<param name="camera_frame" value="camera3" />
+		<param name="target_max_z" value="1.4"/>
+		<param name="target_min_z" value="0.4"/>
+		<param name="max_inflation" value="5" />
+	</node>
+
+	<!-- <include file="$(find dme_image_proc)/launch/target_finder.launch" output="screen"/> -->
+
+	<include file="$(find dme_image_proc)/launch/target_finder.launch"/>
+
+	<node pkg="lidar_search_target" type="lidar_search_target_manager" name="target_manager" output="screen">
+		<remap from="static_map" to="map4target_static_map"/>
+	</node>
+
+	<node pkg="object_detection" type="signal_recognition4_2.py" name="signal_recognition" output="screen"/>
+
+	<node pkg="my_pointcloud2" type="bounding_box_node" name="bounding_box" />
+
+	<node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure" /> 
+
+	<include file="$(find tsukuba_challenge)/launch/kerberos_urdf.launch">
+	</include>
+
+	<node pkg="my_pointcloud2" type="adjust_exposure" name="adjust_camera1" respawn="true" output="screen">
+		<param name="camera" value="usb_cam1/image_raw" />
+		<param name="camera_frame" value="camera1" />
+		<param name="camera_port" value="/dev/C920_1" />
+		<param name="v_ref" value="91"/>
+		<param name="v_kp" value="69"/>
+		<param name="v_kd" value="0.05"/>
+		<param name="control_time" value="0.13"/>
+	</node>
+	<node pkg="my_pointcloud2" type="adjust_exposure" name="adjust_camera2" respawn="true">
+		<param name="camera" value="usb_cam2/image_raw" />
+		<param name="camera_frame" value="camera2" />
+		<param name="camera_port" value="/dev/C920_2" />
+		<param name="v_ref" value="91"/>
+		<param name="v_kp" value="69"/>
+		<param name="v_kd" value="0.05"/>
+		<param name="control_time" value="0.13"/>
+	</node>
+	<node pkg="my_pointcloud2" type="adjust_exposure" name="adjust_camera3" respawn="true">
+		<param name="camera" value="usb_cam3/image_raw" />
+		<param name="camera_frame" value="camera3" />
+		<param name="camera_port" value="/dev/C920_3" />
+		<param name="v_ref" value="91"/>
+		<param name="v_kp" value="69"/>
+		<param name="v_kd" value="0.05"/>
+		<param name="control_time" value="0.13"/>
+	</node>
+
+
+	<node pkg="dme_talker" type="dme_talker_node" name="talker"  respawn="true"/>
+
+	<node pkg="amcl_updater" type="amcl_updater_node" name="amcl_adjuster" respawn="true" >
+		<param name="update_loop" value="20"/>
+	</node>
+	<node pkg="rviz" type="rviz" name="rviz" args="-d /home/kerberos/.rviz/tsukuba_challenge.rviz" respawn="true">
+	</node>
+	<node pkg="costmap_clearing" type="costmap_clearing" name="costmap_clearing" respawn="true" output="screen"/>
+
+</launch>
+

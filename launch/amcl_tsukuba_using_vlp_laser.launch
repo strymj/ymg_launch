@@ -1,7 +1,7 @@
 <launch>
-	<!-- <node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/both8.yaml"> -->
+	<node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/both8.yaml">
 	<!-- <node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/localization_map_univ_both8x0.7.yaml"> -->
-	<node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/univ_vlp10hz_both_r0.7.yaml">
+	<!-- <node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/univ_vlp10hz_both_r0.7.yaml"> -->
 		<remap from="map" to="map4amcl" />
 		<remap from="static_map" to="map4amcl_static_map"/>
 	</node>
@@ -32,9 +32,9 @@
 	<!-- <param name="initial_pose_y" value="0.152"/> -->
 	<!-- <param name="initial_pose_a" value="&#45;0.011"/> -->
 	<!--2017 start-->
-	<!-- <param name="initial_pose_x" value="1.77"/> -->
-	<!-- <param name="initial_pose_y" value="2.49"/> -->
-	<!-- <param name="initial_pose_a" value="0.550"/> -->
+	<param name="initial_pose_x" value="1.77"/>
+	<param name="initial_pose_y" value="2.49"/>
+	<param name="initial_pose_a" value="0.550"/>
 	<!-- test 2017-07-08-13-03-18.bag -s 1400 -->
 	<!-- <param name="initial_pose_x" value="245.0"/> -->
 	<!-- <param name="initial_pose_y" value="200.0"/> -->

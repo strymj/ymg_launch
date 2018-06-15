@@ -30,19 +30,23 @@
 	<!-- 	<remap from="static_map" to="map4obstacle_static_map"/> -->
 	<!-- </node> -->
 
-	<node name="my_pointcloud2_clustering_node" pkg="dme_pointcloud_proc" type="clustering_node" output="screen" respawn="true">
+	<node name="clustering_node" pkg="dme_pointcloud_proc" type="clustering_node" output="screen" respawn="true">
 		<param name="velodyne_points" value="velodyne_points"/>
-		<param name="velodyne_frame" value="velodyne"/>
-		<param name="target_frame" value="base_link"/>
-		<param name="coeff_h" value="60"/>
-		<param name="coeff_v" value="75"/>
-		<param name="coeff_s" value="45"/>
-		<param name="extract_clust" value="0"/>
+		<param name="map_frame" value="map"/>
+		<param name="sensor_frame" value="velodyne"/>
+		<param name="horizontal_resolution_deg" value="2.0"/>
+		<param name="vertical_resolution_deg" value="0.25"/>
+		<param name="horizontal_gap_thresh" value="5.0"/>
+		<param name="vertical_gap_thresh" value="15.0"/>
+		<param name="remove_ground" value="true"/>
+		<param name="max_ground_gradient_deg" value="10.0"/>
+		<param name="publish_in_clust_order" value="true"/>
+		<param name="publish_ground_topic" value="false"/>
 		<param name="min_range" value="0.8"/>
-		<param name="max_range" value="15"/>
+		<param name="max_range" value="9.0"/>
 	</node>
 
-	<node pkg="dme_pointcloud_proc" name="my_pointcloud2_tracking" type="tracking_node" output="screen" respawn="true">
+	<node pkg="dme_pointcloud_proc" name="tracking_node" type="tracking_node" output="screen" respawn="true">
 		<remap from="clustered_pc" to="clustered_pc"/>
 
 		<param name="track_size_min_x" value="0.3"/>
@@ -62,7 +66,6 @@
 		<param name="weight_size" value="0.3"/>
 		<param name="weight_old" value="0.0"/>
 		<param name="weight_long_tracked" value="0.1"/>
-		<param name="interval" value="0.05"/>
 	</node>
 
 	<!-- <node pkg="dme_pointcloud_proc" type="bounding_box_node" name="bounding_box"> -->

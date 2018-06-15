@@ -65,11 +65,7 @@
 		<param name="vertical_resolution_deg" value="0.25"/>
 		<param name="horizontal_gap_thresh" value="5.0"/>
 		<param name="vertical_gap_thresh" value="15.0"/>
-		<param name="coeff_h" value="60"/>
-		<param name="coeff_v" value="75"/>
-		<param name="coeff_s" value="45"/>
 		<param name="remove_ground" value="true"/>
-		<param name="first_ring_ground_thresh_z" value="0.15"/>
 		<param name="max_ground_gradient_deg" value="10.0"/>
 		<param name="publish_in_clust_order" value="true"/>
 		<param name="publish_ground_topic" value="false"/>

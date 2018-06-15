@@ -1,5 +1,5 @@
 <launch> 
-	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ymg_launch)/rviz_config/demo.launch.rviz" respawn="true"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ymg_launch)/rviz_config/demo.rviz" respawn="true"/>
 
 	<include file="$(find usb_cam)/launch/c920t_high_reso.launch"/> 
 

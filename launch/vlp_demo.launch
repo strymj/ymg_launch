@@ -1,0 +1,94 @@
+<launch> 
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find jrm2018)/rviz_config/myconf.rviz" respawn="true"/>
+
+	<node pkg="tf" type="static_transform_publisher" name="base2velodyne" args="0.34 0 0.91 0 0 0 base_link velodyne 100"/>
+	<node pkg="tf" type="static_transform_publisher" name="map2base" args="0 0 0 0 0 0 map base_link 100"/>
+	
+	<include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch"/> 
+
+	<!-- <node pkg="velodyne_point" type="cloud_node" name="packets2pointcloud2"/> -->
+
+	<node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2">
+		<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="130"/>
+	</node>
+
+	<node pkg="dme_pointcloud_proc" type="pointcloud_to_laser_node" name="vlp_laser_scan" output="screen">
+		<param name="max_height" value="50"/>
+		<param name="min_height" value="-0.91"/>
+		<param name="laser_frame" value="velodyne"/>
+		<param name="mode" value="ring"/>
+		<param name="used_ring" value="8"/>
+		<remap from="vlp_laser" to="vlp_laser"/>
+	</node>
+
+	<!-- <include file="$(find jrm2018)/launch/amcl_tsukuba_using_vlp_laser.launch"/> -->
+
+	<!-- <node pkg="map_server" type="map_server" name="map4obstacle" args="$(find jrm2018)/map/both8.yaml"> -->
+	<!-- 	<remap from="map" to="map4obstacle" /> -->
+	<!-- 	<remap from="static_map" to="map4obstacle_static_map"/> -->
+	<!-- </node> -->
+
+	<node name="my_pointcloud2_clustering_node" pkg="dme_pointcloud_proc" type="clustering_node" output="screen" respawn="true">
+		<param name="velodyne_points" value="velodyne_points"/>
+		<param name="velodyne_frame" value="velodyne"/>
+		<param name="target_frame" value="base_link"/>
+		<param name="coeff_h" value="60"/>
+		<param name="coeff_v" value="75"/>
+		<param name="coeff_s" value="45"/>
+		<param name="extract_clust" value="0"/>
+		<param name="min_range" value="0.8"/>
+		<param name="max_range" value="15"/>
+	</node>
+
+	<node pkg="dme_pointcloud_proc" name="my_pointcloud2_tracking" type="tracking_node" output="screen" respawn="true">
+		<remap from="clustered_pc" to="clustered_pc"/>
+
+		<param name="track_size_min_x" value="0.3"/>
+		<param name="track_size_min_y" value="0.1"/>
+		<param name="track_size_min_z" value="0.5"/>
+		<param name="track_size_max_x" value="1.2"/>
+		<param name="track_size_max_y" value="0.8"/>
+		<param name="track_size_max_z" value="2.0"/>
+		<param name="track_min_z" value="1.0"/>
+		<param name="track_max_z" value="2.1"/>
+
+		<param name="target_size_min_x" value="0.3"/>
+		<param name="target_size_min_y" value="0.1"/>
+		<param name="target_size_min_z" value="0.5"/>
+		<param name="target_size_max_x" value="0.8"/>
+		<param name="target_size_max_y" value="0.8"/>
+		<param name="target_size_max_z" value="2.0"/>
+		<param name="target_min_z" value="1"/>
+		<param name="target_max_z" value="2.1"/>
+
+		<param name="dynamic_speed_threshold" value="0.8"/>
+		<param name="tracking_max_speed" value="15.0"/>
+
+
+		<param name="weight_place" value="0.7"/>
+		<param name="weight_size" value="0.3"/>
+		<param name="weight_old" value="0.0"/>
+		<param name="weight_long_tracked" value="0.0"/>
+		<param name="interval" value="0.05"/>
+	</node>
+
+	<!-- <node pkg="dme_pointcloud_proc" type="bounding_box_node" name="bounding_box"> -->
+		<!-- 	<remap from="clustered_pc" to="tracked_pc_static"/> -->
+		<!-- </node> -->
+
+	<!-- <node pkg="dme_pointcloud_proc" type="ring_variance_node" name="ring_obstacle" respawn="true"> -->
+	<!-- 	<remap from="obstacle_points" to="velodyne_obstacles"/> -->
+	<!-- 	<remap from="clear_points" to="velodyne_clear"/> -->
+	<!-- 	<param name="average_n" value="5"/> -->
+	<!-- 	<param name="range" value="8.0"/> -->
+	<!-- 	<!&#45;&#45; <param name="threshold" value="0.00015"/> &#45;&#45;> -->
+	<!-- 	<param name="threshold" value="0.0002"/> -->
+	<!-- 	<!&#45;&#45; <param name="max_z" value="&#38;#45;0.71"/> &#45;&#45;> -->
+	<!-- 	<!&#45;&#45; <param name="min_z" value="&#38;#45;1.11"/> &#45;&#45;> -->
+	<!-- 	<param name="max_z" value="100.71"/> -->
+	<!-- 	<param name="min_z" value="&#45;100.11"/> -->
+	<!-- </node>   -->
+	
+</launch>

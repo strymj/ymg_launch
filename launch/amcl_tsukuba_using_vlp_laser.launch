@@ -78,18 +78,12 @@
 	<param name="initial_cov_xx" value="0.01"/>
 	<param name="initial_cov_yy" value="0.01"/>
 	<param name="initial_cov_aa" value="0.03"/>
-	<!--<param name="odom_alpha1" value="0.2"/>-->
-	<!--<param name="odom_alpha2" value="0.2"/>-->
-	<param name="odom_alpha1" value="0.01"/>
-	<param name="odom_alpha2" value="0.01"/>
-	<!--<param name="odom_alpha1" value="0.1"/>-->
-	<!--<param name="odom_alpha2" value="0.05"/>-->
-	<!-- translation std dev, m -->
-	<param name="odom_alpha3" value="0.01"/>
-	<param name="odom_alpha4" value="0.01"/>
-	<!--<param name="odom_alpha3" value="0.2"/>-->
-	<!--<param name="odom_alpha4" value="0.1"/>-->
-	<param name="odom_alpha5" value="0.1"/>
+
+	<param name="odom_alpha1" value="0.05"/>
+	<param name="odom_alpha2" value="0.05"/>
+	<param name="odom_alpha3" value="0.05"/>
+	<param name="odom_alpha4" value="0.05"/>
+
 	<param name="laser_z_hit" value="0.7"/>
 	<param name="laser_z_short" value="0.05"/>
 	<param name="laser_z_max" value="0.05"/>

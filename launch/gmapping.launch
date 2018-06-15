@@ -5,9 +5,9 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find jrm2018)/rviz_config/myconf.rviz"/> 
 
 	<!-- <arg name="bag1" default="$(find bags)/univ_test_2018/univ2018_manual.bag"/> -->
-	<arg name="bag1" default="$(find bags)/tc2018/university_test/20180612/manual2.bag"/>
+	<arg name="bag1" default="/home/kerberos/manual2.bag"/>
 
-	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.25 $(arg bag1)"/>
+	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.5 $(arg bag1)"/>
 
 	<node pkg="gmapping" type="slam_gmapping" name="gmapping" output="screen">
 		<!-- <remap from="scan" to="scan_top"/> -->
@@ -32,8 +32,8 @@
 		<!-- <param name="linearUpdate" value="0.50"/> -->
 		<!-- <param name="angularUpdate" value="0.3"/> -->
 		<!-- <param name="resampleThreshold" value="0.5"/> -->
-		<!-- <param name="particles" value="100"/> -->
-		<param name="delta" value="0.1" />
+		<param name="particles" value="50"/>
+		<param name="delta" value="0.2" />
 		<!-- <param name="occ_thresh" value="0.1" /> -->
 	</node>
 
@@ -58,4 +58,3 @@
 	</node>
 
 </launch>
-

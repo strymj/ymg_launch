@@ -6,30 +6,41 @@
 	<!-- <arg name="bag1" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/tf_map_2017&#45;11&#45;24&#45;02&#45;31&#45;56.bag"/> -->
 	<!-- <arg name="bag1" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/odom_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
 	<!-- <arg name="bag2" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/velodyne_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
-	<arg name="bag1" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/odom_2017-07-08-13-03-18.bag"/>
-	<arg name="bag2" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/velodyne_2017-07-08-13-03-18.bag"/>
+	<!-- <arg name="bag1" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/odom_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
+	<!-- <arg name="bag2" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/velodyne_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
 	<!-- <arg name="bag1" default="$(find bags)/tc2017/university_test/20170606/tf_2017&#45;06&#45;06&#45;07&#45;15&#45;05.bag"/> -->
 	<!-- <arg name="bag2" default="$(find bags)/tc2017/university_test/20170606/velodyne_2017&#45;06&#45;06&#45;07&#45;15&#45;05.bag"/> -->
 	<!-- <arg name="bag3" default="$(find bags)/tc2017/tsukuba_challenge/20170708/manual1/cam_2017&#45;07&#45;08&#45;13&#45;03&#45;18.bag"/> -->
-	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.5 $(arg bag1) $(arg bag2)"/>
+	<arg name="bag1" default="$(find bags)/tc2018/university_test/20180612/manual2.bag"/>
+	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.7 $(arg bag1)"/>
 	<!-- <node pkg="rosbag" type="play" name="player" output="screen" args="&#45;&#45;clock &#45;r 0.05 $(arg bag1) $(arg bag2)"/> -->
 	<!-- <node pkg="rosbag" type="play" name="player" output="screen" args="&#45;&#45;clock &#45;r 0.16 &#45;s 1400 $(arg bag1) $(arg bag2)"/> -->
 	<!-- <node pkg="rosbag" type="play" name="player" output="screen" args="&#45;&#45;clock $(arg bag1)"/> -->
 
+	<!-- <node pkg="tf" type="static_transform_publisher" name="base2velodyne" args="0.32 0 0.91 0 0 0 base_link velodyne 100"/> -->
+	<!-- <node pkg="tf" type="static_transform_publisher" name="base2hokuyo3d" args="0.45 0 0.80 0 0 3.14159 base_link hokuyo3d 100"/> -->
+
+
 	<!-- <node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/localization_map_univ_both8x0.7.yaml"> -->
 	<!-- <node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/both8.yaml"> -->
-	<node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/univ_vlp10hz_both_r0.7.yaml">
+	<!-- <node pkg="map_server" type="map_server" name="map4obstacle" args="$(find ymg_launch)/map/univ_vlp10hz_both_r0.7.yaml"> -->
+	<arg name="map" default="$(find ymg_launch)/map/univ2018.yaml"/>
+	<node pkg="map_server" type="map_server" name="map4obstacle" args="$(arg map)">
 		<remap from="map" to="map4obstacle" />
 		<remap from="static_map" to="map4obstacle_static_map"/>
+	</node>
+
+	<!-- <node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/localization_map_univ_both8x0.7.yaml"> -->
+	<!-- <node pkg="map_server" type="map_server" name="map4amcl" args="$(find ymg_launch)/map/univ_vlp10hz_both_r0.7.yaml"> -->
+	<node pkg="map_server" type="map_server" name="map4amcl" args="$(arg map)">
+		<remap from="map" to="map4amcl" />
+		<remap from="static_map" to="map4amcl_static_map"/>
 	</node>
 
 	<include file="$(find ymg_launch)/launch/amcl_tsukuba_using_vlp_laser.launch"/>
 
 
-	<node pkg="sensor_tf_test" name="odom_tf" type="sensor_tf_odom"/>
-
-	<node pkg="tf" type="static_transform_publisher" name="base2velodyne" args="0.32 0 0.91 0 0 0 base_link velodyne 100"/>
-	<node pkg="tf" type="static_transform_publisher" name="base2hokuyo3d" args="0.45 0 0.80 0 0 3.14159 base_link hokuyo3d 100"/>
+	<!-- <node pkg="sensor_tf_test" name="odom_tf" type="sensor_tf_odom"/> -->
 
 	<node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2">
 		<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
@@ -89,6 +100,7 @@
 
 		<param name="dynamic_speed_threshold" value="0.7"/>
 		<param name="tracking_max_speed" value="10.0"/>
+		<param name="random_color_num" value="8"/>
 
 		<param name="likeliness_threshold" value="0.80"/>
 		<param name="weight_place" value="0.6"/>

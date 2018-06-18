@@ -5,7 +5,8 @@
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find ymg_launch)/rviz_config/myconf.rviz"/> 
 
 	<!-- <arg name="bag1" default="$(find bags)/univ_test_2018/univ2018_manual.bag"/> -->
-	<arg name="bag1" default="$(find bags)/tc2018/university_test/20180612/manual2.bag"/>
+	<!-- <arg name="bag1" default="$(find bags)/tc2018/university_test/20180612/manual2.bag"/> -->
+	<arg name="bag1" default="/home/kerberos/manual2.bag"/>
 
 	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.1 $(arg bag1)"/>
 
@@ -16,19 +17,19 @@
 		<param name="map_frame" value="map"/>
 		<param name="odom_frame" value="gyro_odom"/>
 		<param name="base_frame" value="base_link"/>
-		<!-- <param name="map_update_interval" value="0.5"/> -->
+		<!-- <param name="map_update_interval" value="1.0"/> -->
 		<param name="maxUrange" value="120"/>
 		<!-- <param name="sigma" value="3.0"/> -->
 		<!-- <param name="kernelSize" value="2"/> -->
-		<!-- <param name="lstep" value="0.1" /> -->
+		<param name="lstep" value="0.02" />
 		<!-- <param name="astep" value="0.1" /> -->
 		<!-- <param name="iterations" value="10"/> -->
 		<!-- <param name="lsigma" value="0.02" /> -->
 		<!-- <param name="ogain" value="3.0" /> -->
-		<param name="srr" value="0.1"/>
-		<param name="srt" value="0.1"/>
-		<param name="str" value="0.1"/>
-		<param name="stt" value="0.1"/>
+		<param name="srr" value="0.2"/>
+		<param name="srt" value="0.2"/>
+		<param name="str" value="0.2"/>
+		<param name="stt" value="0.2"/>
 		<!-- <param name="linearUpdate" value="0.50"/> -->
 		<!-- <param name="angularUpdate" value="0.3"/> -->
 		<!-- <param name="resampleThreshold" value="0.5"/> -->

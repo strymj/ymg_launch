@@ -60,7 +60,7 @@
 		<param name="track_min_z" value="1.0"/>
 		<param name="track_max_z" value="2.1"/>
 
-		<param name="dynamic_speed_threshold" value="0.8"/>
+		<param name="dynamic_speed_threshold" value="0.4"/>
 		<param name="tracking_max_speed" value="15.0"/>
 		<param name="random_color_num" value="8"/>
 

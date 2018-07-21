@@ -6,56 +6,58 @@
 
 	<!-- <arg name="bag1" default="$(find bags)/univ_test_2018/univ2018_manual.bag"/> -->
 	<!-- <arg name="bag1" default="$(find bags)/tc2018/university_test/20180612/manual2.bag"/> -->
-	<arg name="bag1" default="/home/kerberos/manual2.bag"/>
+	<!-- <arg name="bag1" default="/home/kerberos/manual2.bag"/> -->
+	<!-- <arg name="bag1" default="$(find bags)/tc2018/tsukuba_challenge/20180630/2018&#45;06&#45;30&#45;13&#45;07&#45;46.bag"/> -->
+	<arg name="bag1" default="$(find bags)/tc2018/tsukuba_challenge/20180630/2018-06-30-15-03-06.bag"/>
 
-	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.1 $(arg bag1)"/>
+	<node pkg="rosbag" type="play" name="player" output="screen" args="--clock -r 0.7 $(arg bag1)"/>
 
 	<node pkg="gmapping" type="slam_gmapping" name="gmapping" output="screen">
-		<!-- <remap from="scan" to="scan_top"/> -->
-		<remap from="scan" to="vlp_laser"/>
+		<remap from="scan" to="scan_top"/>
+		<!-- <remap from="scan" to="vlp_laser"/> -->
 		<remap from="map" to="map"/>
 		<param name="map_frame" value="map"/>
 		<param name="odom_frame" value="gyro_odom"/>
 		<param name="base_frame" value="base_link"/>
 		<!-- <param name="map_update_interval" value="1.0"/> -->
-		<param name="maxUrange" value="120"/>
+		<param name="maxUrange" value="40"/>
 		<!-- <param name="sigma" value="3.0"/> -->
 		<!-- <param name="kernelSize" value="2"/> -->
-		<param name="lstep" value="0.02" />
+		<!-- <param name="lstep" value="0.02" /> -->
 		<!-- <param name="astep" value="0.1" /> -->
 		<!-- <param name="iterations" value="10"/> -->
 		<!-- <param name="lsigma" value="0.02" /> -->
 		<!-- <param name="ogain" value="3.0" /> -->
-		<param name="srr" value="0.2"/>
-		<param name="srt" value="0.2"/>
-		<param name="str" value="0.2"/>
-		<param name="stt" value="0.2"/>
+		<param name="srr" value="0.15"/>
+		<param name="srt" value="0.3"/>
+		<!-- <param name="str" value="0.2"/> -->
+		<!-- <param name="stt" value="0.2"/> -->
 		<!-- <param name="linearUpdate" value="0.50"/> -->
 		<!-- <param name="angularUpdate" value="0.3"/> -->
 		<!-- <param name="resampleThreshold" value="0.5"/> -->
-		<param name="particles" value="50"/>
+		<param name="particles" value="100"/>
 		<param name="delta" value="0.2" />
 		<!-- <param name="occ_thresh" value="0.1" /> -->
 	</node>
 
-	<node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2">
-		<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-		<param name="min_range" value="0.8"/>
-		<param name="max_range" value="130"/>
-	</node>
-
-	<node pkg="dme_pointcloud_proc" type="pointcloud_to_laser_node" name="vlp_laser_scan" output="screen">
-		<param name="max_height" value="50"/>
-		<param name="min_height" value="-0.91"/>
-		<!-- <param name="min_range" value="1.0"/> -->
-		<param name="min_range" value="-1.0"/>
-		<!-- <param name="max_range" value="130.0"/> -->
-		<param name="max_range" value="-1.0"/>
-		<param name="laser_frame" value="velodyne"/>
-		<param name="mode" value="both"/>
-		<!-- <param name="mode" value="ring"/> -->
-		<param name="used_ring" value="8"/>
-		<remap from="vlp_laser" to="vlp_laser"/>
-	</node>
+	<!-- <node pkg="velodyne_pointcloud" type="cloud_node" name="packets2pointcloud2"> -->
+	<!-- 	<param name="calibration" value="$(find velodyne_pointcloud)/params/VLP16db.yaml"/> -->
+	<!-- 	<param name="min_range" value="0.8"/> -->
+	<!-- 	<param name="max_range" value="130"/> -->
+	<!-- </node> -->
+  <!--  -->
+	<!-- <node pkg="dme_pointcloud_proc" type="pointcloud_to_laser_node" name="vlp_laser_scan" output="screen"> -->
+	<!-- 	<param name="max_height" value="50"/> -->
+	<!-- 	<param name="min_height" value="&#45;0.91"/> -->
+	<!-- 	<!&#45;&#45; <param name="min_range" value="1.0"/> &#45;&#45;> -->
+	<!-- 	<param name="min_range" value="&#45;1.0"/> -->
+	<!-- 	<!&#45;&#45; <param name="max_range" value="130.0"/> &#45;&#45;> -->
+	<!-- 	<param name="max_range" value="&#45;1.0"/> -->
+	<!-- 	<param name="laser_frame" value="velodyne"/> -->
+	<!-- 	<param name="mode" value="both"/> -->
+	<!-- 	<!&#45;&#45; <param name="mode" value="ring"/> &#45;&#45;> -->
+	<!-- 	<param name="used_ring" value="8"/> -->
+	<!-- 	<remap from="vlp_laser" to="vlp_laser"/> -->
+	<!-- </node> -->
 
 </launch>

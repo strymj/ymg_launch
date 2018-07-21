@@ -75,6 +75,9 @@
 
 	<node pkg="dme_pointcloud_proc" name="tracking" type="tracking_node" output="screen" respawn="true">
 		<remap from="clustered_pc" to="clustered_pc"/>
+		<param name="publish_target_pc" value="movable"/>
+		<param name="publish_target_arrow" value="movable"/>
+		<param name="publish_target_boundingbox" value="movable"/>
 
 		<param name="track_size_min_x" value="0.3"/>
 		<param name="track_size_min_y" value="0.05"/>

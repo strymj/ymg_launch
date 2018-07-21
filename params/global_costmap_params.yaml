@@ -1,0 +1,44 @@
+global_costmap:
+  # global_frame: map
+  # robot_base_frame: base_link
+  update_frequency: 10
+  width: 100
+  height: 100
+  resolution: 0.1 
+  publish_frequency: 5
+  track_unkown_space: false
+  static_map: false
+  rolling_window: true
+  # footprint: [[0.74, 0.30], [-0.1, 0.30], [-0.1, -0.30], [0.74, -0.30]]
+  # footprint_padding: 0.2
+  plugins:
+    # - {name: person_layer,  type: "social_navigation_layers::ProxemicLayer"}
+    - {name: static_layer, type: 'costmap_2d::StaticLayer'}
+    - {name: obstacle_layer, type: 'costmap_2d::ObstacleLayer'}
+    - {name: inflation_layer, type: 'costmap_2d::InflationLayer'}
+    # - {name: waypoint_layer, type: 'waypoint_layer::WaypointLayer'}
+  # person_layer:
+  #   cutoff: 10
+  #   amplitude: 254
+  #   covariance: 0.5
+  #   factor: 20.0
+  #   keep_time: 0.75
+
+  obstacle_layer:
+    
+    #footprint: [[x0, y0], [x1, y1], [x2, y2], [x3, y3]]
+  #   #robot_radius: ir_of_robot
+    observation_sources: laser_integrated laser_back_fixed global_costmap vlp_laser velodyne_obstacles #laser_back laser_front_left_fixed laser_front_right_fixed  laser_front  hokuyo3d_clear hokuyo3d_obstacle   
+    # hokuyo3d_clear: {sensor_frame: base_link, data_type: PointCloud2, topic: hokuyo3d_clear, marking: false, clearing: true}
+    velodyne_obstacles: {sensor_frame: velodyne, data_type: PointCloud2, topic: velodyne_obstacles, marking: true, clearing: false }
+    vlp_laser: {sensor_frame: velodyne, data_type: LaserScan, topic: vlp_laser, marking: true, clearing: false, obstacle_range: 30.0, raytrace_range: 40.0}
+    # laser_front: {sensor_frame: laser_front, data_type: LaserScan, topic: scan_front, marking: true, clearing: true, inf_is_valid: true}
+    # laser_back: {sensor_frame: laser_back, data_type: LaserScan, topic: scan_back, marking: true, clearing: true, inf_is_valid: true}
+    # laser_front_left_fixed: {frame: laser_front_left, data_type: LaserScan, topic: scan_front_left_fixed, marking: true, clearing: true, inf_is_valid: true, obstacle_range: 30.0, raytrace_range: 40.0}
+    # laser_front_right_fixed: {frame: laser_front_right, data_type: LaserScan, topic: scan_front_right_fixed, marking: true, clearing: true, inf_is_valid: true, obstacle_range: 30.0, raytrace_range: 40.0}
+    laser_integrated: {sensor_frame: laser_integrated, data_type: LaserScan, topic: integrated_scan, marking: true, clearing: true, inf_is_valid: true, obstacle_range: 30.0, raytrace_range: 40.0}
+    laser_back_fixed: {frame: laser_back, data_type: LaserScan, topic: scan_back_fixed, marking: true, clearing: true, inf_is_valid: true, obstacle_range: 30.0, raytrace_range: 40.0}
+    global_costmap: {sensor_frame: base_link, data_type: PointCloud2, topic: local_costmap, marking: true, clearing: false, obstacle_range: 5}
+
+  inflation_layer: {inflation_radius: 0.6, cost_scaling_factor: 3 }
+
